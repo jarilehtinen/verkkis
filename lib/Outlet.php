@@ -58,7 +58,7 @@ class Outlet
         }
 
         // Help
-        if ($command == '--help' || $command == '--h' || $command == 'help') {
+        if ($command == '--help' || $command == '-h' || $command == 'help') {
             $this->help();
         }
 
