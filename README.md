@@ -2,19 +2,19 @@
 
 Small command line program to get products from [Verkkokauppa.com Outlet](https://www.verkkokauppa.com/fi/outlet/yksittaiskappaleet).
 
-#### Add alias to .bashrc, .zshrc etc.
+### Add alias to .bashrc, .zshrc etc.
 
 ```shell
 alias verkkis="php [PATH]/index.php"
 ```
 
-#### Update product listings
+### Update product listings
 
 ```shell
 verkkis update
 ```
 
-#### Searching for a product
+### Searching for a product
 
 Using fuzzy search:
 
@@ -30,7 +30,35 @@ Or if you want to search with the exact phrase:
 verkkis "Sonos One"
 ```
 
-#### See other options
+### Saving searches
+
+```shell
+verkkis save "Sonos One"
+```
+
+After saving you can just type:
+
+```shell 
+verkkis
+```
+
+which shows results for all your searches.
+
+### Removing saved search
+
+List saved searches:
+
+```shell
+verkkis list
+```
+
+To remove a specific search:
+
+```shell
+verkkis remove [id]
+```
+
+### See help
 
 ```shell
 verkkis --help
