@@ -191,9 +191,18 @@ class Storage
     {
         $fullPath = sprintf('%s%s', $this->path, self::LAST_UPDATED_FILENAME);
 
+        if (!file_exists($fullPath)) {
+            return;
+        }
+
         $result = unlink($fullPath);
         if (!$result) {
             throw new Exception('Error while deleting last updated timestamp file!');
         }
+    }
+
+    public function isInitialized(): bool
+    {
+        return file_exists(sprintf('%s%s', $this->path, self::DATA_FILENAME));
     }
 }
