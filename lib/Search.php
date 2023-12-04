@@ -106,8 +106,15 @@ class Search
 
         // Price
         echo $this->white_bold;
-        echo $product['price'] . " €\n";
+        echo $product['price'] . " €";
         echo $this->reset;
+
+        // Original price
+        if ($product['originalPrice'] > 0) {
+            echo ' (' . number_format($product['originalPrice'], 2, ',', '') . ' €)';
+        }
+
+        echo "\n";
 
         // Link
         echo $this->cyan;
