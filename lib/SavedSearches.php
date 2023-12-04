@@ -4,36 +4,16 @@ namespace Verkkokauppa;
 
 class SavedSearches
 {
-    private string $dataPath;
+    private Storage $storage;
 
     /**
      * Validates the existence of the data path
      *
-     * @param string $dataPath
+     * @param Storage $storage
      */
-    public function __construct(string $dataPath)
+    public function __construct(Storage $storage)
     {
-        $this->dataPath = $dataPath;
-
-        if (!is_dir($this->dataPath)) {
-            mkdir($this->dataPath);
-        }
-    }
-
-    /**
-     * Get saved searches
-     */
-    public function getSavedSearches(): array
-    {
-        $saved_data = [];
-        $path       = sprintf('%ssaved-searches.json', $this->dataPath);
-
-        if (file_exists($path)) {
-            $saved_searches = file_get_contents($path);
-            $saved_data     = json_decode($saved_searches, true);
-        }
-
-        return $saved_data;
+        $this->storage = $storage;
     }
 
     /**
@@ -41,7 +21,12 @@ class SavedSearches
      */
     public function listSavedSearches(): void
     {
-        $savedData = $this->getSavedSearches();
+        try {
+            $savedData = $this->storage->getSavedSearches();
+        } catch (\Exception $e) {
+            printf('Error when listing saved searches: %s', $e->getMessage());
+            exit;
+        }
 
         $i = 1;
         foreach ($savedData as $savedSearch) {
@@ -61,23 +46,12 @@ class SavedSearches
             return;
         }
 
-        // Get saved searches
-        $savedData = $this->getSavedSearches();
-
-        // Append to saved searches
-        $savedData = array_merge($savedData, $searchStrings);
-
-        // Save to JSON
-        $this->saveToJSON($savedData);
-    }
-
-    /**
-     * Save to JSON
-     */
-    private function saveToJSON(array $data): void
-    {
-        $path = sprintf('%ssaved-searches.json', $this->dataPath);
-        file_put_contents($path, json_encode($data));
+        try {
+            $this->storage->addSavedSearch($searchStrings);
+        } catch (\Exception $e) {
+            printf('Error while saving searches: %s', $e->getMessage());
+            exit;
+        }
     }
 
     /**
@@ -93,19 +67,11 @@ class SavedSearches
             return;
         }
 
-        // Get saved searches
-        $saved_data = $this->getSavedSearches();
-
-        if (!$saved_data) {
-            echo 'No saved search data found. Nothing to remove.' . PHP_EOL;
-
-            return;
+        try {
+            $this->storage->removeSavedSearch($searchId);
+        } catch (\Exception $e) {
+            printf('Error while removing saved search: %s', $e->getMessage());
+            exit;
         }
-
-        // Remove search string from array
-        unset($saved_data[$searchId - 1]);
-
-        // Save to JSON
-        $this->saveToJSON($saved_data);
     }
 }

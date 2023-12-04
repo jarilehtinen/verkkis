@@ -2,18 +2,17 @@
 
 namespace Verkkokauppa;
 
+use Exception;
+
 require_once('Color.php');
 
 class Outlet
 {
-    private string $dataPath;
+    private Storage $storage;
 
     public function __construct(string $dataPath)
     {
-        $this->dataPath = $dataPath;
-        if (!is_dir($this->dataPath)) {
-            mkdir($this->dataPath);
-        }
+        $this->storage = new Storage($dataPath);
     }
 
     /**
@@ -27,7 +26,7 @@ class Outlet
         switch ($command) {
             case 'update':
             case 'u':
-                $data = new Data($this->dataPath);
+                $data = new Data($this->storage);
                 $data->updateData();
                 break;
 
@@ -35,7 +34,7 @@ class Outlet
             case 's':
             case 'add':
             case 'a':
-                $save = new SavedSearches($this->dataPath);
+                $save = new SavedSearches($this->storage);
                 $save->saveSearch($params);
                 break;
 
@@ -43,14 +42,14 @@ class Outlet
             case 'r':
             case 'delete':
             case 'd':
-                $save = new SavedSearches($this->dataPath);
+                $save = new SavedSearches($this->storage);
                 $save->removeSearch($params[0]);
                 break;
 
             case 'list':
             case 'l':
             case 'ls':
-                $save = new SavedSearches($this->dataPath);
+                $save = new SavedSearches($this->storage);
                 $save->listSavedSearches();
                 break;
 
@@ -61,7 +60,7 @@ class Outlet
                 break;
 
             default:
-                $search = new Search($this->dataPath);
+                $search = new Search($this->storage);
                 $search->search($params);
         }
     }
@@ -71,10 +70,14 @@ class Outlet
      */
     public function runDefaultCommand(): void
     {
-        $save  = new SavedSearches($this->dataPath);
-        $saved = $save->getSavedSearches();
+        try {
+            $saved = $this->storage->getSavedSearches();
+        } catch (Exception $e) {
+            printf('Error while getting saved searches: %s', $e->getMessage());
+            exit;
+        }
 
-        if (!$saved) {
+        if (count($saved) === 0) {
             echo Color::YELLOW;
             echo "┌─────────────────────────────────────────────────────────────────────────────┐\n";
             echo "│ No saved searches. You can save searches with: verkkis save [search string] │\n";
@@ -85,9 +88,9 @@ class Outlet
         }
 
         foreach ($saved as $save) {
-            sprintf("%sSearching for %s...%s%s", Color::GREEN_BOLD, $save, Color::RESET, PHP_EOL);
+            printf("%sSearching for %s...%s%s", Color::GREEN_BOLD, $save, Color::RESET, PHP_EOL);
 
-            $search = new Search($this->dataPath);
+            $search = new Search($this->storage);
             $search->search([$save], 3);
         }
     }

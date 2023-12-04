@@ -6,18 +6,18 @@ class Search
 {
     /** @var string URL prefix to use when generating view links */
     private const VIEW_URL = 'https://www.verkkokauppa.com/fi/outlet/yksittaiskappaleet/';
-    private string $dataPath;
+    private Storage $storage;
 
     /**
-     * Sets the data path.
+     * Initialized the storage
      *
      * This class doesn't directly manipulate any data so we don't need to check for existence.
      *
-     * @param string $dataPath
+     * @param Storage $storage
      */
-    public function __construct(string $dataPath)
+    public function __construct(Storage $storage)
     {
-        $this->dataPath = $dataPath;
+        $this->storage = $storage;
     }
 
     /**
@@ -28,7 +28,7 @@ class Search
      */
     public function search(array $params, int $indent = 0): void
     {
-        $dataClass = new Data($this->dataPath);
+        $dataClass = new Data($this->storage);
 
         // Check when data was last updated
         $this->lastUpdatedWarning();
@@ -133,10 +133,14 @@ class Search
      */
     private function lastUpdatedWarning(): void
     {
-        $dataClass = new Data($this->dataPath);
-        $date      = $dataClass->lastUpdated();
+        $date      = $this->storage->getLastUpdated();
 
         if (!$date) {
+            echo Color::RED;
+            echo "┌────────────────────────────────────────────────────────────────────┐\n";
+            echo "│ Production information has never been updated! Run: verkkis update │\n";
+            echo "└────────────────────────────────────────────────────────────────────┘\n";
+            echo Color::RESET;
             return;
         }
 

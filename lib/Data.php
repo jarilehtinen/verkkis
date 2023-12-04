@@ -2,6 +2,8 @@
 
 namespace Verkkokauppa;
 
+use \Exception;
+
 /**
  * Manages the data retrieval from Verkkokauppa
  */
@@ -10,31 +12,13 @@ class Data
     /** @var string API URL for fetching the outlet data */
     private const URL = "https://web-api.service.verkkokauppa.com/search?private=true&sort=releaseDate%3Adesc&lang=fi&context=customer_returns_page&pageNo=";
 
-    private array $products   = [];
-    private int   $totalPages = 1;
-    private string $dataPath;
+    private array   $products   = [];
+    private int     $totalPages = 1;
+    private Storage $storage;
 
-    public function __construct(string $dataPath)
+    public function __construct(Storage $storage)
     {
-        $this->dataPath = $dataPath;
-
-        if (!is_dir($this->dataPath)) {
-            mkdir($this->dataPath);
-        }
-    }
-
-    /**
-     * Get data
-     */
-    public function getData(): false|string
-    {
-        $path = sprintf('%sdata.json', $this->dataPath);
-
-        if (!file_exists($path)) {
-            return false;
-        }
-
-        return file_get_contents($path);
+        $this->storage = $storage;
     }
 
     /**
@@ -42,9 +26,12 @@ class Data
      */
     public function getProducts(): array
     {
-        $data = $this->getData();
-
-        return json_decode($data, true);
+        try {
+            return $this->storage->getData();
+        } catch (Exception $exception) {
+            printf('Error while reading data from disk! %s', $exception->getMessage());
+            exit;
+        }
     }
 
     /**
@@ -52,7 +39,12 @@ class Data
      */
     public function updateData(): void
     {
-        $this->resetData();
+        try {
+            $this->storage->resetData();
+        } catch (Exception $e) {
+            printf('Error while resetting data: %s', $e->getMessage());
+            exit();
+        }
 
         printf("Updating data...%s", PHP_EOL);
 
@@ -75,7 +67,20 @@ class Data
             usleep(200000);
         } while ($page <= $this->totalPages);
 
-        $this->storeData();
+        try {
+            $this->storage->saveData($this->products);
+        } catch (Exception $e) {
+            printf('Error while saving data: %s', $e->getMessage());
+            exit;
+        }
+
+        try {
+            $this->storage->updateLastUpdated();
+        } catch (Exception $e) {
+            printf('Error while updating timestamp: %s', $e->getMessage());
+            exit;
+        }
+
         printf("%sUpdate complete%s", PHP_EOL, PHP_EOL);
     }
 
@@ -107,6 +112,7 @@ class Data
             $this->totalPages = $json['numPages'];
         } else {
             printf("Missing total page count from response!%s", PHP_EOL);
+
             return false;
         }
 
@@ -132,49 +138,5 @@ class Data
         }
 
         $this->products = array_merge($products, $this->products);
-    }
-
-    /**
-     * Reset data
-     */
-    private function resetData(): void
-    {
-        $path = sprintf('%sdata.json', $this->dataPath);
-
-        if (!file_exists($path)) {
-            touch($path);
-        }
-
-        file_put_contents($path, "");
-    }
-
-    /**
-     * Store data
-     */
-    private function storeData(): void
-    {
-        // Store data
-        $path = sprintf('%sdata.json', $this->dataPath);
-        file_put_contents($path, json_encode($this->products));
-
-        // Store last updated date
-        $path = sprintf('%slast-updated.json', $this->dataPath);
-        file_put_contents($path, json_encode(['date' => date('Y-m-d H:i:s')]));
-    }
-
-    /**
-     * Last updated
-     */
-    public function lastUpdated(): false|string
-    {
-        $path = sprintf('%slast-updated.json', $this->dataPath);
-
-        if (!file_exists($path)) {
-            return false;
-        }
-
-        $date = json_decode(file_get_contents($path), true);
-
-        return $date['date'];
     }
 }
