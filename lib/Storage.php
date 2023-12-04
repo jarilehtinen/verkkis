@@ -49,6 +49,7 @@ class Storage
     public function resetData(): void
     {
         $this->saveData([]);
+        $this->resetLastUpdated();
     }
 
     /**
@@ -180,6 +181,19 @@ class Storage
         $result = file_put_contents($fullPath, json_encode(['date' => date('Y-m-d H:i:s')]));
         if (!$result) {
             throw new Exception('Could not write last update timestamp to disk!');
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function resetLastUpdated(): void
+    {
+        $fullPath = sprintf('%s%s', $this->path, self::LAST_UPDATED_FILENAME);
+
+        $result = unlink($fullPath);
+        if (!$result) {
+            throw new Exception('Error while deleting last updated timestamp file!');
         }
     }
 }

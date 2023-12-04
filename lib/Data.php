@@ -2,7 +2,7 @@
 
 namespace Verkkokauppa;
 
-use \Exception;
+use Exception;
 
 /**
  * Manages the data retrieval from Verkkokauppa
