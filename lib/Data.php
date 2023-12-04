@@ -57,11 +57,11 @@ class Data
         printf("Updating data...%s", PHP_EOL);
 
         // Get all data
-        $page = 1;
+        $page = 0;
         do {
             $url  = sprintf('%s%s', self::URL, $page);
             $data = $this->getDataFromUrl($url);
-            if (1 === $page) {
+            if (0 === $page) {
                 printf("Found %d pages of products%s", $this->totalPages, PHP_EOL);
             } else {
                 echo '.';
