@@ -7,6 +7,7 @@ require_once('lib/Outlet.php');
 require_once('lib/Data.php');
 require_once('lib/SavedSearches.php');
 require_once('lib/Search.php');
+require_once('lib/Storage.php');
 
 use Verkkokauppa\Outlet;
 
