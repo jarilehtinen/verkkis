@@ -57,6 +57,8 @@ class Data
             }
         }
 
+        echo "\n";
+
         $this->storeData();
     }
 
