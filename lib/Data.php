@@ -2,76 +2,98 @@
 
 namespace Verkkokauppa;
 
+use Exception;
+
+/**
+ * Manages the data retrieval from Verkkokauppa
+ */
 class Data
 {
-    private $url = 'https://web-api.service.verkkokauppa.com/search?private=true&pageNo=%page%&sort=releaseDate%3Adesc&lang=fi&context=customer_returns_page';
-    private $products = [];
-    private $totalPages = 10;
+    /** @var string API URL for fetching the outlet data */
+    private const URL = "https://web-api.service.verkkokauppa.com/search?private=true&sort=releaseDate%3Adesc&lang=fi&context=customer_returns_page&pageNo=";
 
-    /**
-     * Get data
-     */
-    public function getData()
+    private array   $products   = [];
+    private int     $totalPages = 1;
+    private Storage $storage;
+
+    public function __construct(Storage $storage)
     {
-        $path = PATH . '/data/data.json';
-
-        if (!file_exists($path)) {
-            return false;
-        }
-
-        return file_get_contents($path);
+        $this->storage = $storage;
     }
 
     /**
      * Get products
      */
-    public function getProducts()
+    public function getProducts(): array
     {
-        $data = $this->getData();
-        return json_decode($data, true);
+        try {
+            return $this->storage->getData();
+        } catch (Exception $exception) {
+            printf('Error while reading data from disk! %s', $exception->getMessage());
+            exit;
+        }
     }
 
     /**
      * Update data
      */
-    public function updateData()
+    public function updateData(): void
     {
-        $page = 0;
-
-        $this->resetData();
-
-        // Get all data
-        for ($page = 0; $page < 200; $page++) {
-            if ($page > $this->totalPages) {
-                break;
-            }
-
-            $url = str_replace('%page%', $page, $this->url);
-
-            if ($data = $this->getDataFromUrl($url)) {
-                echo ".";
-                $this->getProductsFromData($data);
-                usleep(200000);
-            } else {
-                break;
-            }
+        try {
+            $this->storage->resetData();
+        } catch (Exception $e) {
+            printf('Error while resetting data: %s', $e->getMessage());
+            exit();
         }
 
-        echo "\n";
+        printf("Updating data...%s", PHP_EOL);
 
-        $this->storeData();
+        // Get all data
+        $page = 0;
+        do {
+            $url  = sprintf('%s%s', self::URL, $page);
+            $data = $this->getDataFromUrl($url);
+            if (0 === $page) {
+                printf("Found %d pages of products%s", $this->totalPages, PHP_EOL);
+            } else {
+                echo '.';
+            }
+            $page++;
+
+            if (!$data) {
+                break;
+            }
+            $this->getProductsFromData($data);
+            usleep(200000);
+        } while ($page <= $this->totalPages);
+
+        try {
+            $this->storage->saveData($this->products);
+        } catch (Exception $e) {
+            printf('Error while saving data: %s', $e->getMessage());
+            exit;
+        }
+
+        try {
+            $this->storage->updateLastUpdated();
+        } catch (Exception $e) {
+            printf('Error while updating timestamp: %s', $e->getMessage());
+            exit;
+        }
+
+        printf("%sUpdate complete%s", PHP_EOL, PHP_EOL);
     }
 
     /**
      * Get data from URL
      */
-    private function getDataFromUrl($url)
+    private function getDataFromUrl(string $url): bool|string
     {
-        $header_arr = array(
-            '0' => 'User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20100101 Firefox/33.0',
-            '1' => 'Accept-Language: en-US,en;q=0.5',
-            '2' => 'Connection: keep-alive',
-        );
+        $header_arr = [
+            'User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20100101 Firefox/33.0',
+            'Accept-Language: en-US,en;q=0.5',
+            'Connection: keep-alive',
+        ];
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $header_arr);
@@ -88,6 +110,10 @@ class Data
         // Update total pages
         if (isset($json['numPages'])) {
             $this->totalPages = $json['numPages'];
+        } else {
+            printf("Missing total page count from response!%s", PHP_EOL);
+
+            return false;
         }
 
         return $data;
@@ -96,7 +122,7 @@ class Data
     /**
      * Get products from data
      */
-    private function getProductsFromData($data)
+    private function getProductsFromData(string $data): void
     {
         $data = json_decode($data, true);
         $data = $data['products'];
@@ -104,66 +130,15 @@ class Data
         $products = [];
 
         foreach ($data as $product) {
-            $products[] = array(
-                'id' => $product['customerReturnsInfo']['id'],
-                'name' => $product['name'],
-                'price' =>  $product['customerReturnsInfo']['price_with_tax'],
+            $products[] = [
+                'id'    => $product['customerReturnsInfo']['id'],
+                'name'  => $product['name'],
+                'price' => $product['customerReturnsInfo']['price_with_tax'],
                 'originalPrice' => isset($product['price']['current']) ? $product['price']['current'] : null,
                 'condition' => $product['customerReturnsInfo']['condition']
-            );
+            ];
         }
 
         $this->products = array_merge($products, $this->products);
-    }
-
-    /**
-     * Reset data
-     */
-    private function resetData()
-    {
-        $path = PATH . '/data/data.json';
-
-        if (!file_exists($path)) {
-            return false;
-        }
-
-        file_put_contents($path, "");
-    }
-
-    /**
-     * Store data
-     */
-    private function storeData()
-    {
-        // Attempt to create data directory
-        if (!file_exists(PATH . '/data')) {
-            mkdir(PATH . '/data');
-        }
-
-        // Store data
-        $path = PATH . '/data/data.json';
-        file_put_contents($path, json_encode($this->products));
-
-        // Store last updated date
-        $path = PATH . '/data/last-updated.json';
-        file_put_contents($path, json_encode(array('date' => date('Y-m-d H:i:s'))));
-
-        return true;
-    }
-
-    /**
-     * Last updated
-     */
-    public function lastUpdated()
-    {
-        $path = PATH . '/data/last-updated.json';
-
-        if (!file_exists($path)) {
-            return false;
-        }
-
-        $date = json_decode(file_get_contents($path), true);
-
-        return $date['date'];
     }
 }

@@ -2,28 +2,33 @@
 
 namespace Verkkokauppa;
 
-use Verkkokauppa\Data;
-
 class Search
 {
-    private $view_url = 'https://www.verkkokauppa.com/fi/outlet/yksittaiskappaleet/';
-    private $red = "\e[0;31m";
-    private $red_bold = "\e[1;31m";
-    private $green = "\e[0;32m";
-    private $green_bold = "\e[1;32m";
-    private $yellow = "\e[0;33m";
-    private $yellow_bold = "\e[1;33m";
-    private $cyan = "\e[0;36m";
-    private $cyan_bold = "\e[1;36m";
-    private $white_bold = "\e[1;37m";
-    private $reset = "\e[0m";
+    /** @var string URL prefix to use when generating view links */
+    private const VIEW_URL = 'https://www.verkkokauppa.com/fi/outlet/yksittaiskappaleet/';
+    private Storage $storage;
+
+    /**
+     * Initialized the storage
+     *
+     * This class doesn't directly manipulate any data so we don't need to check for existence.
+     *
+     * @param Storage $storage
+     */
+    public function __construct(Storage $storage)
+    {
+        $this->storage = $storage;
+    }
 
     /**
      * Search
+     *
+     * @param array $params Search parameters
+     * @param int   $indent Indent count on output
      */
-    public function search($args, $indent = 0)
+    public function search(array $params, int $indent = 0): void
     {
-        $dataClass = new Data();
+        $dataClass = new Data($this->storage);
 
         // Check when data was last updated
         $this->lastUpdatedWarning();
@@ -32,47 +37,51 @@ class Search
         $products = $dataClass->getProducts();
 
         if (!$products) {
-            return false;
+            return;
         }
 
         // Search string
-        $search_string = $this->getSearchStringFromArgs($args);
+        $searchString = $this->getSearchStringArrayFromParams($params);
 
-        $top_results = [];
-        $medium_results = [];
-        $low_results = [];
+        $topResults    = [];
+        $mediumResults = [];
+        $lowResults    = [];
 
         foreach ($products as $product) {
             $name = strtolower($product['name']);
 
-            $string_found = 0;
+            $stringFound = 0;
 
-            foreach ($search_string as $string) {
+            foreach ($searchString as $string) {
                 if (strstr($name, $string)) {
-                    $string_found++;
+                    $stringFound++;
                 }
             }
 
-            if ($string_found > 2) {
-                $top_results[] = $product;
-            } elseif ($string_found > 1) {
-                $medium_results[] = $product;
-            } elseif ($string_found > 0) {
-                $low_results[] = $product;
+            if ($stringFound > 2) {
+                $topResults[] = $product;
+            } else {
+                if ($stringFound > 1) {
+                    $mediumResults[] = $product;
+                } else {
+                    if ($stringFound > 0) {
+                        $lowResults[] = $product;
+                    }
+                }
             }
         }
 
-        if (count($top_results) > 0) {
-            $results = $top_results;
+        if (count($topResults) > 0) {
+            $results = $topResults;
         } else {
-            $results = array_merge($low_results, $medium_results, $top_results);
+            $results = array_merge($lowResults, $mediumResults, $topResults);
         }
 
         if (!$results) {
             $this->noProductsFound($indent);
         }
 
-        echo "\n";
+        echo PHP_EOL;
 
         foreach ($results as $product) {
             $this->printProductInfo($product, $indent);
@@ -80,34 +89,30 @@ class Search
     }
 
     /**
-     * Get search string from args
+     * Get search string array from args
      */
-    private function getSearchStringFromArgs($args)
+    private function getSearchStringArrayFromParams(array $params): array
     {
-        $search_string = [];
+        $searchString = [];
 
-        foreach ($args as $arg) {
-            $search_string[] = strtolower($arg);
+        foreach ($params as $param) {
+            $searchString[] = strtolower($param);
         }
 
-        return $search_string;
+        return $searchString;
     }
 
     /**
      * Print product info
      */
-    private function printProductInfo($product, $indent = 0)
+    private function printProductInfo(array $product, int $indent = 0): void
     {
+        $indentString = str_pad(' ', $indent);
         // Name
-        echo $this->yellow_bold;
-        echo str_pad(' ', $indent) . $product['name'];
-        echo $this->reset;
-        echo " ";
+        printf('%s%s%s%s ', Color::YELLOW, $indentString, $product['name'], Color::RESET);
 
         // Price
-        echo $this->white_bold;
-        echo $product['price'] . " €";
-        echo $this->reset;
+        printf("%s%.2f €%s%s", Color::WHITE_BOLD, $product['price'], Color::RESET, PHP_EOL);
 
         // Original price
         if ($product['originalPrice'] > 0) {
@@ -117,40 +122,41 @@ class Search
         echo "\n";
 
         // Link
-        echo $this->cyan;
-        echo str_pad(' ', $indent) . $this->view_url . $product['id'];
-        echo $this->reset;
+        printf('%s%s%s%s%s', Color::CYAN, $indentString, self::VIEW_URL, $product['id'], Color::RESET);
 
-        echo "\n\n";
+        echo PHP_EOL . PHP_EOL;
     }
 
     /**
      * No products found
      */
-    private function noProductsFound($indent)
+    private function noProductsFound(int $indent): void
     {
-        echo "\n" . str_pad(' ', $indent) . "No results.\n";
+        printf("%s%sNo results.%s", PHP_EOL, str_pad(' ', $indent), PHP_EOL);
     }
 
     /**
      * Last updated warning
      */
-    private function lastUpdatedWarning()
+    private function lastUpdatedWarning(): void
     {
-        $dataClass = new Data();
-
-        $date = $dataClass->lastUpdated();
+        $date      = $this->storage->getLastUpdated();
 
         if (!$date) {
-            return false;
+            echo Color::RED;
+            echo "┌────────────────────────────────────────────────────────────────────┐\n";
+            echo "│ Production information has never been updated! Run: verkkis update │\n";
+            echo "└────────────────────────────────────────────────────────────────────┘\n";
+            echo Color::RESET;
+            return;
         }
 
         if (strtotime($date) < strtotime('-1 day')) {
-            echo $this->red;
+            echo Color::RED;
             echo "┌───────────────────────────────────────────────────────────────────────┐\n";
             echo "│ Production information updated over 24 hours ago. Run: verkkis update │\n";
             echo "└───────────────────────────────────────────────────────────────────────┘\n";
-            echo $this->reset;
+            echo Color::RESET;
         }
     }
 }
