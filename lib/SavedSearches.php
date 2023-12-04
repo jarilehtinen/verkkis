@@ -4,28 +4,36 @@ namespace Verkkokauppa;
 
 class SavedSearches
 {
-    private $red = "\e[0;31m";
-    private $red_bold = "\e[1;31m";
-    private $green = "\e[0;32m";
-    private $green_bold = "\e[1;32m";
-    private $yellow = "\e[0;33m";
-    private $yellow_bold = "\e[1;33m";
-    private $cyan = "\e[0;36m";
-    private $cyan_bold = "\e[1;36m";
-    private $white_bold = "\e[1;37m";
-    private $reset = "\e[0m";
+    /** @var string Data path */
+    private string $dataPath;
+
+    /**
+     * Validates the existence of the data path
+     *
+     * @param string $dataPath
+     */
+    public function __construct(string $dataPath)
+    {
+        $this->dataPath = $dataPath;
+
+        if (!is_dir($this->dataPath)) {
+            mkdir($this->dataPath);
+        }
+    }
 
     /**
      * Get saved searches
+     *
+     * @return array
      */
-    public function getSavedSearches()
+    public function getSavedSearches(): array
     {
         $saved_data = [];
-        $path = PATH . '/data/saved-searches.json';
+        $path       = sprintf('%ssaved-searches.json', $this->dataPath);
 
         if (file_exists($path)) {
             $saved_searches = file_get_contents($path);
-            $saved_data = json_decode($saved_searches, true);
+            $saved_data     = json_decode($saved_searches, true);
         }
 
         return $saved_data;
@@ -34,76 +42,71 @@ class SavedSearches
     /**
      * List saved searches
      */
-    public function listSavedSearches($args)
+    public function listSavedSearches(): void
     {
-        $saved_data = $this->getSavedSearches();
+        $savedData = $this->getSavedSearches();
 
         $i = 1;
-
-        foreach ($saved_data as $saved_search) {
-            echo $this->yellow . '[' . $i . '] ' . $this->reset;
-            echo implode(' ', $saved_search) . "\n";
-            $i++;
+        foreach ($savedData as $savedSearch) {
+            printf("%s[%d]%s %s%s", Color::YELLOW, $i++, Color::RESET, $savedSearch, PHP_EOL);
         }
     }
 
     /**
      * Save search
      */
-    public function saveSearch($args)
+    public function saveSearch(array $searchStrings = []): void
     {
-        array_shift($args);
-        array_shift($args);
+        if ([] === $searchStrings) {
+            echo 'No search strings given.' . PHP_EOL;
+            echo 'Usage: verkkis save <search string> [additional search strings...]' . PHP_EOL;
 
-        if (!$args) {
-            echo 'No search string given.' . "\n";
-            echo 'Usage: verkkis save <search string>' . "\n";
-            return false;
+            return;
         }
 
         // Get saved searches
-        $saved_data = $this->getSavedSearches();
+        $savedData = $this->getSavedSearches();
 
         // Append to saved searches
-        $saved_data[] = $args;
+        $savedData = array_merge($savedData, $searchStrings);
 
         // Save to JSON
-        $this->saveToJSON($saved_data);
+        $this->saveToJSON($savedData);
     }
 
     /**
      * Save to JSON
      */
-    private function saveToJSON($data)
+    private function saveToJSON(array $data): void
     {
-        $path = PATH . '/data/saved-searches.json';
+        $path = sprintf('%ssaved-searches.json', $this->dataPath);
         file_put_contents($path, json_encode($data));
     }
 
     /**
      * Remove search
      */
-    public function removeSearch($args)
+    public function removeSearch(string $searchId = null): void
     {
-        if (!isset($args[2]) || !is_numeric($args[2])) {
-            echo 'No ID given.' . "\n";
-            echo 'Get search ID by running: verkkis list' . "\n";
-            echo 'Then run: verkkis remove <id>' . "\n";
-            return false;
-        }
+        if (!is_numeric($searchId)) {
+            echo 'No ID given.' . PHP_EOL;
+            echo 'Get search ID by running: verkkis list' . PHP_EOL;
+            echo 'Then run: verkkis remove <id>' . PHP_EOL;
 
-        $id = $args[2];
+            return;
+        }
 
         // Get saved searches
         $saved_data = $this->getSavedSearches();
 
         if (!$saved_data) {
-            echo 'No saved search data found. Nothing to remove.' . "\n";
-            return false;
+            echo 'No saved search data found. Nothing to remove.' . PHP_EOL;
+
+            return;
         }
 
         // Remove search string from array
-        unset($saved_data[$id - 1]);
+        unset($saved_data[$searchId - 1]);
 
         // Save to JSON
         $this->saveToJSON($saved_data);
