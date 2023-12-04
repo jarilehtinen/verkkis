@@ -134,6 +134,8 @@ class Data
                 'id'    => $product['customerReturnsInfo']['id'],
                 'name'  => $product['name'],
                 'price' => $product['customerReturnsInfo']['price_with_tax'],
+                'originalPrice' => isset($product['price']['current']) ? $product['price']['current'] : null,
+                'condition' => $product['customerReturnsInfo']['condition']
             ];
         }
 

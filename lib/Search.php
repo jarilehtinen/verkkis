@@ -114,6 +114,13 @@ class Search
         // Price
         printf("%s%.2f €%s%s", Color::WHITE_BOLD, $product['price'], Color::RESET, PHP_EOL);
 
+        // Original price
+        if ($product['originalPrice'] > 0) {
+            echo ' (' . number_format($product['originalPrice'], 2, ',', '') . ' €)';
+        }
+
+        echo "\n";
+
         // Link
         printf('%s%s%s%s%s', Color::CYAN, $indentString, self::VIEW_URL, $product['id'], Color::RESET);
 
