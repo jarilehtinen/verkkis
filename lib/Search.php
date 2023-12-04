@@ -112,14 +112,12 @@ class Search
         printf('%s%s%s%s ', Color::YELLOW, $indentString, $product['name'], Color::RESET);
 
         // Price
-        printf("%s%.2f €%s%s", Color::WHITE_BOLD, $product['price'], Color::RESET, PHP_EOL);
-
-        // Original price
+        $originalPrice = '';
         if ($product['originalPrice'] > 0) {
-            echo ' (' . number_format($product['originalPrice'], 2, ',', '') . ' €)';
+            $originalPrice = sprintf(' (%.2f €)', $product['originalPrice']);
         }
 
-        echo "\n";
+        printf("%s%.2f €%s%s%s", Color::WHITE_BOLD, $product['price'], $originalPrice, Color::RESET, PHP_EOL);
 
         // Link
         printf('%s%s%s%s%s', Color::CYAN, $indentString, self::VIEW_URL, $product['id'], Color::RESET);

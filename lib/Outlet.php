@@ -20,6 +20,8 @@ class Outlet
      */
     public function runCommand(array $args): void
     {
+        $this->checkInit();
+
         $command = $args[1];
         $params = array_slice($args, 2);
 
@@ -70,6 +72,8 @@ class Outlet
      */
     public function runDefaultCommand(): void
     {
+        $this->checkInit();
+
         try {
             $saved = $this->storage->getSavedSearches();
         } catch (Exception $e) {
@@ -108,5 +112,14 @@ class Outlet
         echo '  remove [<id>]  Remove saved search' . PHP_EOL;
         echo '  help           Show help' . PHP_EOL . PHP_EOL;
         echo 'Running without any commands will run saved searches.' . PHP_EOL . PHP_EOL;
+    }
+
+    private function checkInit(): void
+    {
+        if (!$this->storage->isInitialized()) {
+            printf("Data has not been initialized, running initial update...%s", PHP_EOL);
+            $data = new Data($this->storage);
+            $data->updateData();
+        }
     }
 }
