@@ -4,7 +4,6 @@ namespace Verkkokauppa;
 
 class SavedSearches
 {
-    /** @var string Data path */
     private string $dataPath;
 
     /**
@@ -23,8 +22,6 @@ class SavedSearches
 
     /**
      * Get saved searches
-     *
-     * @return array
      */
     public function getSavedSearches(): array
     {

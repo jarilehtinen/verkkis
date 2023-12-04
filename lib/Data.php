@@ -7,10 +7,9 @@ namespace Verkkokauppa;
  */
 class Data
 {
-    /** @var string API URL for fetching the outlet pages */
+    /** @var string API URL for fetching the outlet data */
     private const URL = "https://web-api.service.verkkokauppa.com/search?private=true&sort=releaseDate%3Adesc&lang=fi&context=customer_returns_page&pageNo=";
 
-    /** @var array Product array */
     private array $products   = [];
     private int   $totalPages = 1;
     private string $dataPath;
@@ -23,6 +22,7 @@ class Data
             mkdir($this->dataPath);
         }
     }
+
     /**
      * Get data
      */
@@ -116,7 +116,7 @@ class Data
     /**
      * Get products from data
      */
-    private function getProductsFromData($data): void
+    private function getProductsFromData(string $data): void
     {
         $data = json_decode($data, true);
         $data = $data['products'];

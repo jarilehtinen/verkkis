@@ -6,8 +6,6 @@ class Search
 {
     /** @var string URL prefix to use when generating view links */
     private const VIEW_URL = 'https://www.verkkokauppa.com/fi/outlet/yksittaiskappaleet/';
-
-    /** @var string Data path */
     private string $dataPath;
 
     /**

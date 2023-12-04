@@ -15,6 +15,7 @@ class Outlet
             mkdir($this->dataPath);
         }
     }
+
     /**
      * Run command
      */
