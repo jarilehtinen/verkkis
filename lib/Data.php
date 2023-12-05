@@ -69,6 +69,27 @@ class Data
         do {
             $url  = sprintf('%s%s', self::URL, $page);
             $data = $this->getDataFromUrl($url);
+
+            // Loading indicator: 419/459 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░]  91%
+            $percent = round($page / $this->totalPages * 100);
+
+            $loaded = round(($percent / 100) * self::LOADING_BAR_LENGTH);
+            $loading_bar_loaded = str_repeat("▓", $loaded);
+
+            $remaining = self::LOADING_BAR_LENGTH - mb_strlen($loading_bar_loaded);
+            $loading_bar_remaining = $remaining > 0 ? str_repeat("░", $remaining) : '';
+
+            $total_pages_str_length = strlen($this->totalPages);
+
+            printf(
+                "\r%{$total_pages_str_length}u/%u [%s%s] %u%%",
+                $page,
+                $this->totalPages,
+                $loading_bar_loaded,
+                $loading_bar_remaining,
+                $percent
+            );
+
             $page++;
 
             if (!$data) {
