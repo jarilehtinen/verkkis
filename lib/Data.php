@@ -69,11 +69,6 @@ class Data
         do {
             $url  = sprintf('%s%s', self::URL, $page);
             $data = $this->getDataFromUrl($url);
-            if (0 === $page) {
-                printf("Found %d pages of products%s", $this->totalPages, PHP_EOL);
-            } else {
-                echo '.';
-            }
             $page++;
 
             if (!$data) {
