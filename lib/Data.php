@@ -120,7 +120,7 @@ class Data
     /**
      * Get data from URL
      */
-    private function getDataFromUrl(string $url): bool|string
+    private function getDataFromUrl(string $url): bool|array
     {
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_HTTPHEADER, self::HEADER);
@@ -140,7 +140,7 @@ class Data
     /**
      * Get total pages from URL
      */
-    private function getTotalPagesFromUrl(string $url): bool|string
+    private function getTotalPagesFromUrl(string $url): bool|int
     {
         $json = $this->getDataFromUrl($url);
 
@@ -150,7 +150,7 @@ class Data
 
         // Return total number of pages
         if (isset($json['numPages'])) {
-            return $json['numPages'];
+            return (int) $json['numPages'];
         }
 
         printf("Missing total page count from response!%s", PHP_EOL);
@@ -161,9 +161,8 @@ class Data
     /**
      * Get products from data
      */
-    private function getProductsFromData(string $data): void
+    private function getProductsFromData(array $data): void
     {
-        $data = json_decode($data, true);
         $data = $data['products'];
 
         $products = [];
