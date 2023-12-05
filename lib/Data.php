@@ -126,19 +126,17 @@ class Data
         curl_setopt($ch, CURLOPT_HTTPHEADER, self::HEADER);
         curl_setopt($ch, CURLOPT_TIMEOUT, 10);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $data = curl_exec($ch);
 
+        $data = curl_exec($ch);
         $json = json_decode($data, true);
 
         if (isset($json['message']) && $json['message'] != "Error performing search") {
             return false;
         }
 
-        // Update total pages
-        if (isset($json['numPages'])) {
-            $this->totalPages = $json['numPages'];
-        } else {
-            printf("Missing total page count from response!%s", PHP_EOL);
+        return $json;
+    }
+
     /**
      * Get total pages from URL
      */
