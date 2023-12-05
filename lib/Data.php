@@ -65,6 +65,7 @@ class Data
 
         // Get all data
         $page = 0;
+
         do {
             $url  = sprintf('%s%s', self::URL, $page);
             $data = $this->getDataFromUrl($url);
