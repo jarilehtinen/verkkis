@@ -54,6 +54,15 @@ class Data
 
         printf("Updating data...%s", PHP_EOL);
 
+        // Get total pages
+        $url  = sprintf('%s%s', self::URL, 0);
+        $this->totalPages = $this->getTotalPagesFromUrl($url);
+
+        if (!$this->totalPages) {
+            printf("Could not get total page count!%s", PHP_EOL);
+            exit;
+        }
+
         // Get all data
         $page = 0;
         do {
@@ -112,11 +121,25 @@ class Data
             $this->totalPages = $json['numPages'];
         } else {
             printf("Missing total page count from response!%s", PHP_EOL);
+    /**
+     * Get total pages from URL
+     */
+    private function getTotalPagesFromUrl(string $url): bool|string
+    {
+        $json = $this->getDataFromUrl($url);
 
+        if (!$json) {
             return false;
         }
 
-        return $data;
+        // Return total number of pages
+        if (isset($json['numPages'])) {
+            return $json['numPages'];
+        }
+
+        printf("Missing total page count from response!%s", PHP_EOL);
+
+        return false;
     }
 
     /**
