@@ -11,9 +11,15 @@ class Data
 {
     /** @var string API URL for fetching the outlet data */
     private const URL = "https://web-api.service.verkkokauppa.com/search?private=true&sort=releaseDate%3Adesc&lang=fi&context=customer_returns_page&pageNo=";
+    private const LOADING_BAR_LENGTH = 30;
+    private const HEADER = [
+        'User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20100101 Firefox/33.0',
+        'Accept-Language: en-US,en;q=0.5',
+        'Connection: keep-alive',
+    ];
 
-    private array   $products   = [];
-    private int     $totalPages = 1;
+    private array $products = [];
+    private int $totalPages = 1;
     private Storage $storage;
 
     public function __construct(Storage $storage)
@@ -89,14 +95,8 @@ class Data
      */
     private function getDataFromUrl(string $url): bool|string
     {
-        $header_arr = [
-            'User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20100101 Firefox/33.0',
-            'Accept-Language: en-US,en;q=0.5',
-            'Connection: keep-alive',
-        ];
-
         $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $header_arr);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, self::HEADER);
         curl_setopt($ch, CURLOPT_TIMEOUT, 10);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $data = curl_exec($ch);
