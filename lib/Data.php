@@ -95,6 +95,7 @@ class Data
             if (!$data) {
                 break;
             }
+
             $this->getProductsFromData($data);
             usleep(200000);
         } while ($page <= $this->totalPages);
