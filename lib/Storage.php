@@ -121,11 +121,11 @@ class Storage
             throw new Exception('No saved searches');
         }
 
-        if (!isset($searches[$index])) {
+        if (!isset($searches[$index - 1])) {
             throw new Exception('No such search ID');
         }
 
-        unset($searches[$index]);
+        unset($searches[$index - 1]);
         $this->saveSavedSearches($searches);
     }
 
