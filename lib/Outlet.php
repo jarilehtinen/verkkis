@@ -23,7 +23,7 @@ class Outlet
         $this->checkInit();
 
         $command = $args[1];
-        $params = array_slice($args, 2);
+        $params = array_slice($args, 1);
 
         switch ($command) {
             case 'update':
@@ -45,7 +45,7 @@ class Outlet
             case 'delete':
             case 'd':
                 $save = new SavedSearches($this->storage);
-                $save->removeSearch($params[0]);
+                $save->removeSearch($params[1]);
                 break;
 
             case 'list':
