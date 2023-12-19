@@ -144,6 +144,10 @@ class Storage
     {
         $fullPath = sprintf('%s%s', $this->path, self::SEARCHES_FILENAME);
 
+        // Make sure array keys don't get stored
+        $data = array_values($data);
+
+        // Encode data
         $json = json_encode($data);
 
         if (false === $json) {
