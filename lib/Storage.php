@@ -15,6 +15,7 @@ class Storage
     public function __construct($path)
     {
         $this->path = $path;
+
         if (!is_dir($this->path)) {
             mkdir($this->path);
         }
@@ -26,16 +27,19 @@ class Storage
     public function getData(): array
     {
         $fullPath = sprintf('%s%s', $this->path, self::DATA_FILENAME);
+
         if (!file_exists($fullPath)) {
             file_put_contents($fullPath, '[]');
         }
 
         $data = file_get_contents($fullPath);
+
         if (false === $data) {
             throw new Exception('Error reading data from disk!');
         }
 
         $json = json_decode($data, true);
+
         if (false === $json) {
             throw new Exception('Invalid JSON');
         }
@@ -60,11 +64,13 @@ class Storage
         $fullPath = sprintf('%s%s', $this->path, self::DATA_FILENAME);
 
         $json = json_encode($data);
+
         if (false === $json) {
             throw new Exception('Error while converting to JSON');
         }
 
         $result   = file_put_contents($fullPath, $json);
+
         if (false === $result) {
             throw new Exception('Could not save data on disk!');
         }
@@ -82,11 +88,13 @@ class Storage
 
         if (file_exists($fullPath)) {
             $savedSearches = file_get_contents($fullPath);
+
             if (false === $savedSearches) {
                 throw new Exception('Error reading data from disk!');
             }
 
             $savedData = json_decode($savedSearches, true);
+
             if (null === $savedData || is_bool($savedData)) {
                 throw new Exception('Data file is not valid JSON!');
             }
@@ -137,11 +145,13 @@ class Storage
         $fullPath = sprintf('%s%s', $this->path, self::SEARCHES_FILENAME);
 
         $json = json_encode($data);
+
         if (false === $json) {
             throw new Exception('Data cannot be encoded as JSON');
         }
 
         $result = file_put_contents($fullPath, json_encode($data));
+
         if (false === $result) {
             throw new Exception('Unable to write to disk!');
         }
@@ -159,11 +169,13 @@ class Storage
         }
 
         $data = file_get_contents($fullPath);
+
         if (false === $data) {
             throw new Exception('Error while reading last update date from disk!');
         }
 
         $json = json_decode($data, true);
+
         if (!isset($json['date'])) {
             throw new Exception('Last update date is corrupted!');
         }
@@ -179,6 +191,7 @@ class Storage
         $fullPath = sprintf('%s%s', $this->path, self::LAST_UPDATED_FILENAME);
 
         $result = file_put_contents($fullPath, json_encode(['date' => date('Y-m-d H:i:s')]));
+
         if (!$result) {
             throw new Exception('Could not write last update timestamp to disk!');
         }
@@ -196,6 +209,7 @@ class Storage
         }
 
         $result = unlink($fullPath);
+
         if (!$result) {
             throw new Exception('Error while deleting last updated timestamp file!');
         }
