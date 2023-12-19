@@ -46,6 +46,9 @@ class SavedSearches
             return;
         }
 
+        // Remove keyword from search strings
+        array_shift($searchStrings);
+
         try {
             $this->storage->addSavedSearch($searchStrings);
         } catch (\Exception $e) {
