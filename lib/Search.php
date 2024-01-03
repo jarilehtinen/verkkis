@@ -108,11 +108,13 @@ class Search
     private function printProductInfo(array $product, int $indent = 0): void
     {
         $indentString = str_pad(' ', $indent);
+
         // Name
         printf('%s%s%s%s ', Color::YELLOW, $indentString, $product['name'], Color::RESET);
 
         // Price
         $originalPrice = '';
+
         if ($product['originalPrice'] > 0) {
             $originalPrice = sprintf(' (%.2f €)', $product['originalPrice']);
         }
