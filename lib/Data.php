@@ -171,9 +171,12 @@ class Data
             $products[] = [
                 'id'    => $product['customerReturnsInfo']['id'],
                 'name'  => $product['name'],
+                'description'  => $product['descriptionShort'],
+                'returnInfo' => $product['customerReturnsInfo']['product_extra_info'],
                 'price' => $product['customerReturnsInfo']['price_with_tax'],
                 'originalPrice' => isset($product['price']['current']) ? $product['price']['current'] : null,
-                'condition' => $product['customerReturnsInfo']['condition']
+                'condition' => $product['customerReturnsInfo']['condition'],
+                'dateAdded' => $product['createdAt']
             ];
         }
 
