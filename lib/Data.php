@@ -131,6 +131,7 @@ class Data
         $json = json_decode($data, true);
 
         if (isset($json['message']) && $json['message'] != "Error performing search") {
+            printf('Error while getting data: %s%s', $json['message'], PHP_EOL);
             return false;
         }
 
