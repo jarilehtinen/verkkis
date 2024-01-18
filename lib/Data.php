@@ -28,6 +28,17 @@ class Data
     }
 
     /**
+     * Get URL
+     *
+     * @param int $page
+     * @return string
+     */
+    public function getUrl($page): string
+    {
+        return sprintf('%s%s', self::URL, $page);
+    }
+
+    /**
      * Get products
      */
     public function getProducts(): array
@@ -55,7 +66,7 @@ class Data
         printf("Updating data...%s", PHP_EOL);
 
         // Get total pages
-        $url  = sprintf('%s%s', self::URL, 0);
+        $url  = $this->getUrl(0);
         $this->totalPages = $this->getTotalPagesFromUrl($url);
 
         if (!$this->totalPages) {
@@ -67,7 +78,7 @@ class Data
         $page = 0;
 
         do {
-            $url  = sprintf('%s%s', self::URL, $page);
+            $url  = $this->getUrl($page);
             $data = $this->getDataFromUrl($url);
 
             // Loading indicator: 419/459 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░]  91%
