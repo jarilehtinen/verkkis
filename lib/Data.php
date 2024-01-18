@@ -10,7 +10,7 @@ use Exception;
 class Data
 {
     /** @var string API URL for fetching the outlet data */
-    private const URL = "https://web-api.service.verkkokauppa.com/search?private=true&sort=releaseDate%3Adesc&lang=fi&context=customer_returns_page&pageNo=";
+    private const URL = "https://web-api.service.verkkokauppa.com/search?private=true&sort=releaseDate%3Adesc&lang=fi&isCustomerReturn=true&pageSize=99&pageNo=";
     private const LOADING_BAR_LENGTH = 30;
     private const HEADER = [
         'User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20100101 Firefox/33.0',
