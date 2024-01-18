@@ -141,7 +141,7 @@ class Data
         $data = curl_exec($ch);
         $json = json_decode($data, true);
 
-        if (isset($json['message']) && $json['message'] != "Error performing search") {
+        if (isset($json['message']) && $json['message']) {
             printf('Error while getting data: %s%s', $json['message'], PHP_EOL);
             return false;
         }
