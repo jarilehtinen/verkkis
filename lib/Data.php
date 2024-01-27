@@ -52,6 +52,19 @@ class Data
     }
 
     /**
+     * Get previous products
+     */
+    public function getPreviousProducts(): array
+    {
+        try {
+            return $this->storage->getPreviousData();
+        } catch (Exception $exception) {
+            printf('Error while reading data from disk! %s', $exception->getMessage());
+            exit;
+        }
+    }
+
+    /**
      * Update data
      */
     public function updateData(): void
@@ -66,7 +79,7 @@ class Data
         printf("Updating data...%s", PHP_EOL);
 
         // Get total pages
-        $url  = $this->getUrl(0);
+        $url = $this->getUrl(0);
         $this->totalPages = $this->getTotalPagesFromUrl($url);
 
         if (!$this->totalPages) {
