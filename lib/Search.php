@@ -7,6 +7,7 @@ class Search
     /** @var string URL prefix to use when generating view links */
     private const VIEW_URL = 'https://www.verkkokauppa.com/fi/outlet/yksittaiskappaleet/';
     private Storage $storage;
+    private array $previousProducts = [];
 
     /**
      * Initialized the storage
@@ -39,6 +40,9 @@ class Search
         if (!$products) {
             return;
         }
+
+        // Get previous products and store them in a class variable
+        $this->previousProducts = $dataClass->getPreviousProducts();
 
         // Search string
         $searchString = $this->getSearchStringArrayFromParams($params);
@@ -84,8 +88,27 @@ class Search
         echo PHP_EOL;
 
         foreach ($results as $product) {
-            $this->printProductInfo($product, $indent);
+            $previousProduct = $this->getPreviousProduct($product['id']);
+            $this->printProductInfo($product, $previousProduct, $indent);
         }
+    }
+
+    /**
+     * Get previous product
+     */
+    public function getPreviousProduct(string $id): array|bool
+    {
+        if (count($this->previousProducts) < 1) {
+            return false;
+        }
+
+        foreach ($this->previousProducts as $product) {
+            if ($product['id'] == $id) {
+                return $product;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -105,7 +128,7 @@ class Search
     /**
      * Print product info
      */
-    private function printProductInfo(array $product, int $indent = 0): void
+    private function printProductInfo(array $product, array|bool $previousProduct, int $indent = 0): void
     {
         $indentString = str_pad(' ', $indent);
 
@@ -119,7 +142,26 @@ class Search
             $originalPrice = sprintf(' (%.2f €)', $product['originalPrice']);
         }
 
-        printf("%s%.2f €%s%s%s", Color::WHITE_BOLD, $product['price'], $originalPrice, Color::RESET, PHP_EOL);
+        // Previous price
+        $previousPrice = 0;
+
+        if (isset($previousProduct['price'])) {
+            $previousPrice = $previousProduct['price'];
+        }
+
+        // Price
+        $price = $product['price'];
+
+        if ($previousPrice > 0  && $price > $previousPrice) {
+            $price = sprintf('%s▲ %.2f → %.2f €%s', Color::RED_BOLD, $previousPrice, $price, COLOR::RESET);
+        } elseif ($previousPrice > 0  && $price < $previousPrice) {
+            $price = sprintf('%s▼ %.2f → %.2f €%s', Color::GREEN_BOLD, $price, $previousPrice, COLOR::RESET);
+        } else {
+            $price = sprintf('%s%.2f €%s', Color::WHITE_BOLD, $price, Color::RESET);
+        }
+
+        // Print price
+        printf("%s%s%s%s", $price, $originalPrice, COLOR::RESET, PHP_EOL);
 
         // Link
         printf('%s%s%s%s%s', Color::CYAN, $indentString, self::VIEW_URL, $product['id'], Color::RESET);
