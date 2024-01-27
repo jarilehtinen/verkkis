@@ -7,6 +7,7 @@ use Exception;
 class Storage
 {
     private const DATA_FILENAME         = 'data.json';
+    private const PREVIOUS_DATA_FILENAME         = 'data-previous.json';
     private const SEARCHES_FILENAME     = 'saved-searches.json';
     private const LAST_UPDATED_FILENAME = 'last-updated.json';
 
@@ -22,6 +23,8 @@ class Storage
     }
 
     /**
+     * Get data
+     *
      * @throws Exception
      */
     public function getData(): array
@@ -48,10 +51,41 @@ class Storage
     }
 
     /**
+     * Get previous data
+     *
+     * @throws Exception
+     */
+    public function getPreviousData(): array
+    {
+        $fullPath = sprintf('%s%s', $this->path, self::PREVIOUS_DATA_FILENAME);
+
+        if (!file_exists($fullPath)) {
+            return false;
+        }
+
+        $data = file_get_contents($fullPath);
+
+        if (false === $data) {
+            throw new Exception('Error reading data from disk!');
+        }
+
+        $json = json_decode($data, true);
+
+        if (false === $json) {
+            throw new Exception('Invalid JSON');
+        }
+
+        return $json;
+    }
+
+    /**
      * @throws Exception
      */
     public function resetData(): void
     {
+        // Store previous data before saving new data
+        $this->storePreviousData();
+
         $this->saveData([]);
         $this->resetLastUpdated();
     }
@@ -61,6 +95,7 @@ class Storage
      */
     public function saveData(array $data): void
     {
+        // Data path
         $fullPath = sprintf('%s%s', $this->path, self::DATA_FILENAME);
 
         $json = json_encode($data);
@@ -74,6 +109,24 @@ class Storage
         if (false === $result) {
             throw new Exception('Could not save data on disk!');
         }
+    }
+
+    /**
+     * Store previous data
+     */
+    private function storePreviousData(): void
+    {
+        // Check if data file exists
+        $dataPath = sprintf('%s%s', $this->path, self::DATA_FILENAME);
+
+        if (!file_exists($dataPath)) {
+            return;
+        }
+
+        // Copy data file to previous data file
+        $previousDataPath = sprintf('%s%s', $this->path, self::PREVIOUS_DATA_FILENAME);
+
+        copy($dataPath, $previousDataPath);
     }
 
     /**
