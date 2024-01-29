@@ -139,25 +139,25 @@ class Search
         $originalPrice = '';
 
         if ($product['originalPrice'] > 0) {
-            $originalPrice = sprintf(' (%.2f €)', $product['originalPrice']);
+            $originalPrice = sprintf(' (%d €)', round($product['originalPrice']));
         }
 
         // Previous price
         $previousPrice = 0;
 
         if (isset($previousProduct['price'])) {
-            $previousPrice = $previousProduct['price'];
+            $previousPrice = round($previousProduct['price']);
         }
 
         // Price
-        $price = $product['price'];
+        $price = round($product['price']);
 
         if ($previousPrice > 0  && $price > $previousPrice) {
-            $price = sprintf('%s▲ %.2f → %.2f €%s', Color::RED_BOLD, $previousPrice, $price, COLOR::RESET);
+            $price = sprintf('%s▲ %d → %d €%s', Color::RED_BOLD, $price, $previousPrice, COLOR::RESET);
         } elseif ($previousPrice > 0  && $price < $previousPrice) {
-            $price = sprintf('%s▼ %.2f → %.2f €%s', Color::GREEN_BOLD, $price, $previousPrice, COLOR::RESET);
+            $price = sprintf('%s▼ %d → %d €%s', Color::GREEN_BOLD, $previousPrice, $price, COLOR::RESET);
         } else {
-            $price = sprintf('%s%.2f €%s', Color::WHITE_BOLD, $price, Color::RESET);
+            $price = sprintf('%s%d €%s', Color::WHITE_BOLD, $price, Color::RESET);
         }
 
         // Print price
