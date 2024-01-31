@@ -121,7 +121,6 @@ class Data
             }
 
             $this->getProductsFromData($data);
-            usleep(200000);
         } while ($page <= $this->totalPages);
 
         try {
