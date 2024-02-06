@@ -199,8 +199,7 @@ class Data
                 'returnInfo' => $product['customerReturnsInfo']['product_extra_info'],
                 'price' => $product['customerReturnsInfo']['price_with_tax'],
                 'originalPrice' => isset($product['price']['current']) ? $product['price']['current'] : null,
-                'condition' => $product['customerReturnsInfo']['condition'],
-                'dateAdded' => $product['createdAt']
+                'condition' => $product['customerReturnsInfo']['condition']
             ];
         }
 
