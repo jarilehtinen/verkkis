@@ -5,9 +5,9 @@ namespace Verkkokauppa;
 class Search
 {
     /** @var string URL prefix to use when generating view links */
-    private const VIEW_URL = 'https://www.verkkokauppa.com/fi/outlet/yksittaiskappaleet/';
-    private Storage $storage;
-    private array $previousProducts = [];
+    protected const VIEW_URL = 'https://www.verkkokauppa.com/fi/outlet/yksittaiskappaleet/';
+    protected Storage $storage;
+    protected array $previousProducts = [];
 
     /**
      * Initialized the storage
@@ -128,7 +128,7 @@ class Search
     /**
      * Print product info
      */
-    private function printProductInfo(array $product, array|bool $previousProduct, int $indent = 0): void
+    protected function printProductInfo(array $product, array|bool $previousProduct, int $indent = 0): void
     {
         $indentString = str_pad(' ', $indent);
 
@@ -172,7 +172,7 @@ class Search
     /**
      * No products found
      */
-    private function noProductsFound(int $indent): void
+    protected function noProductsFound(int $indent): void
     {
         printf("%s%sNo results.%s", PHP_EOL, str_pad(' ', $indent), PHP_EOL);
     }
@@ -180,7 +180,7 @@ class Search
     /**
      * Last updated warning
      */
-    private function lastUpdatedWarning(): void
+    protected function lastUpdatedWarning(): void
     {
         $date      = $this->storage->getLastUpdated();
 
