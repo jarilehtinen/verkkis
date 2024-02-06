@@ -61,6 +61,14 @@ class Outlet
                 $this->help();
                 break;
 
+            case 'new':
+            case '-new':
+            case '-n':
+                $newProducts = new NewProducts($this->storage);
+                $params = ['limit' => isset($params[1]) ? $params[1] : null];
+                $newProducts->listProducts($params);
+                break;
+
             default:
                 $search = new Search($this->storage);
                 $search->search($params);
@@ -110,6 +118,7 @@ class Outlet
         echo '  save [args]    Save search' . PHP_EOL;
         echo '  list           List saved searches' . PHP_EOL;
         echo '  remove [<id>]  Remove saved search' . PHP_EOL;
+        echo '  new            Show recently added products' . PHP_EOL;
         echo '  help           Show help' . PHP_EOL . PHP_EOL;
         echo 'Running without any commands will run saved searches.' . PHP_EOL . PHP_EOL;
     }
