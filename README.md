@@ -14,6 +14,20 @@ alias verkkis="php [PATH]/index.php"
 verkkis update
 ```
 
+### List recently added products
+
+List 10 most recent products:
+
+```shell
+verkkis new
+```
+
+Define own product limit:
+
+```shell
+verkkis new 100
+```
+
 ### Searching for a product
 
 Using fuzzy search:
